@@ -3,14 +3,14 @@ FROM node:20-alpine AS base
 
 # Install dependencies
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 make g++ vips-dev
 WORKDIR /app
 
 # Copy package manager files and install dependencies
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
     if [ -f pnpm-lock.yaml ]; then \
-    corepack enable pnpm && pnpm i --frozen-lockfile; \
+    corepack enable pnpm && pnpm i --frozen-lockfile && pnpm rebuild sharp; \
     else \
     echo "Lockfile not found." && exit 1; \
     fi
@@ -30,6 +30,7 @@ RUN \
 
 # Final stage: Set up the runtime environment
 FROM base AS runner
+RUN apk add --no-cache vips
 WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1

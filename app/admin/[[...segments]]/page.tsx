@@ -13,6 +13,13 @@ export const generateMetadata = ({ params, searchParams }: Args): Promise<Metada
   generatePageMetadata({ config, params, searchParams })
 
 const Page = ({ params, searchParams }: Args) =>
-  RootPage({ config, params, searchParams, importMap: { '@payload-config': config } })
+  RootPage({
+    config,
+    params,
+    searchParams,
+    importMap: {
+      '@payload-config': Promise.resolve({ default: config })
+    }
+  })
 
 export default Page

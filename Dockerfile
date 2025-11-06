@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
     if [ -f pnpm-lock.yaml ]; then \
-    corepack enable pnpm && pnpm i --frozen-lockfile && pnpm rebuild sharp; \
+    corepack enable pnpm && pnpm i --frozen-lockfile --ignore-scripts=false && pnpm rebuild sharp; \
     else \
     echo "Lockfile not found." && exit 1; \
     fi

@@ -4,30 +4,27 @@ FROM node:20-bookworm-slim AS base
 # Install dependencies
 FROM base AS deps
 WORKDIR /app
-
-# Build aşamasında devDependencies'e ihtiyaç var
-ENV NODE_ENV=development
-# pnpm yolunu sabitle
-ENV PNPM_HOME=/root/.local/share/pnpm
-ENV PATH=$PNPM_HOME:$PATH
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 
 # Copy package files and .npmrc for script configuration
 COPY package.json pnpm-lock.yaml .npmrc ./
 COPY yarn.lock* package-lock.json* ./
 
-# pnpm v10: sharp/esbuild build script'lerini önceden onayla
+# Enable pnpm and allow build scripts
 RUN corepack enable pnpm \
- && pnpm -s ignored-builds || true \
- && pnpm -s approve-builds esbuild sharp @esbuild/linux-x64 || true \
- && pnpm i --frozen-lockfile
+ && pnpm config set allow-scripts true \
+ && pnpm config set enable-pre-post-scripts true \
+ && pnpm i --frozen-lockfile --ignore-scripts=false \
+ && pnpm rebuild sharp esbuild
 
 # Build the Next.js application
 FROM base AS builder
 WORKDIR /app
 ENV NODE_ENV=development
-ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable pnpm && pnpm run build
 
 # Final stage: Set up the runtime environment

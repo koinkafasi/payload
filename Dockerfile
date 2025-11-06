@@ -21,7 +21,7 @@ RUN corepack enable pnpm \
 # Build the Next.js application
 FROM base AS builder
 WORKDIR /app
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
